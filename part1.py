@@ -80,9 +80,9 @@ def problem1():
 
 
 
-        cov = [[(2**(1-v) / gamma(v)) * (np.sqrt(2 * v) * max(abs(x - xp), 1e-15) / l) ** v * kv((np.sqrt(2 * v) *
-                                                                                                  max(abs(x - xp), 1e-15) / l))
-                for xp in xp_vector] for x in x_vector]
+        cov = [[(2**(1-v) / gamma(v)) * (np.sqrt(2 * v)
+                                         * max(abs(x - xp), 1e-15) / l) ** v * kv(v, (np.sqrt(2 * v) *
+                                           max(abs(x - xp), 1e-15) / l)) for xp in xp_vector] for x in x_vector]
 
         cov = np.asarray(cov)
 
@@ -109,7 +109,6 @@ def problem1():
 
     #
     #
-    print(max(abs(1e-15 - 1.2), 1e-15))
 
 problem1()
 
