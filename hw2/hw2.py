@@ -1,15 +1,23 @@
 # BDL HW2 by Behnam Heydarshahi
 # September 2018
 
+import numpy as np
+
+
 """
 Regression of Bayesian Neural Network
 """
 def problem1():
-    pass
+    bnn = Bnn([1, 2, 3], 2, 2)
+    bnn.set_activation_func(np.tanh)
+
+    y = bnn.propagate_forward_and_calculate_output()
+
+    print(y)
 
 
 class Unit:
-    def __init__(self, output=0, weight=0, bias=0):
+    def __init__(self, output=0, weight=1, bias=1):
         #TODO: these should be vectors given by Gaussian Processes!
         self.weight = weight
         self.bias = bias
@@ -77,7 +85,7 @@ class Bnn:
 
         return network_output
 
-
+problem1()
 
 
 
