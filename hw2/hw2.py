@@ -1,7 +1,11 @@
 # BDL HW2 by Behnam Heydarshahi
 # September 2018
+#
+# Note: this implementation assumes all the hidden layers(not input or output layer) have the same width, as was the
+# case with all the given examples in the problem. This assumption made my code much more readable and simple.
 
 import numpy as np
+np.random.seed(42)
 
 
 """
@@ -9,7 +13,7 @@ Regression of Bayesian Neural Network
 """
 def problem1():
     bnn = Bnn([1, 2, 3], 2, 2)
-    bnn.set_activation_func(np.tanh) #TODO try other activation functions
+    bnn.set_activation_func(relu) #TODO try other activation functions np.tanh
 
     y = bnn.propagate_forward_and_calculate_output()
 
@@ -17,20 +21,18 @@ def problem1():
 
 
 class Unit:
-    def __init__(self, output=0, weight=[], bias=0):
-        #TODO: these should be Gaussian Processes!
-        self.weight = weight
+    def __init__(self, output=0, weight_vector_length=0, bias=0):
+        self.weight_vector = np.random.normal(0, 1, weight_vector_length)
 
         # Scaler values
-        #TODO: make gaussian!
-        self.bias = bias
+        self.bias = np.random.normal(0, 1)
 
         self.output = output
 
 class Bnn:
     def __init__(self, input_x_vector, num_hidden_layers, num_units_per_layer, activation_func=None):
 
-        self.input_layer = [Unit(x) for x in input_x_vector]
+        self.input_layer = [Unit(x) for x in input_x_vector] #weights are not important here
 
         self.hidden_layers = []
 
@@ -43,10 +45,10 @@ class Bnn:
                 # to the input vector length. In the rest of hidden layers, the units should have weight vectors with
                 # length of the previous layer length. In this implementation, all hidden layers have same num of units!
                 # Therefore, the units have a weight vector of the length of num_units_per_layer
-                if layer_index == 0:
-                    new_unit = Unit(0, [0] * len(self.input_layer))
+                if layer_index == 0: # first hidden layer (not the input layer)
+                    new_unit = Unit(0, len(self.input_layer))
                 else:
-                    new_unit = Unit(0, [0] * num_units_per_layer)
+                    new_unit = Unit(0, num_units_per_layer)
 
                 new_layer.append(new_unit)
 
@@ -55,7 +57,7 @@ class Bnn:
         # should be set separately
         self.activation_func = activation_func
 
-        self.output_unit = Unit(0, [0] * num_units_per_layer)
+        self.output_unit = Unit(0, num_units_per_layer)
 
     def set_activation_func(self, activation_func):
         self.activation_func = activation_func
@@ -80,14 +82,14 @@ class Bnn:
                 sum = current_unit.bias
 
                 for previous_unit_index, previous_unit in enumerate(previous_layer):
-                    sum += current_unit.weight[previous_unit_index] * previous_unit.output
+                    sum += current_unit.weight_vector[previous_unit_index] * previous_unit.output
 
                 current_unit.output = self.activation_func(sum)
 
             # Calculate the output
             output_sum = self.output_unit.bias
             for previous_unit_index, previous_unit in enumerate(self.hidden_layers[-1]):
-                output_sum += self.output_unit.weight[previous_unit_index] * previous_unit.output
+                output_sum += self.output_unit.weight_vector[previous_unit_index] * previous_unit.output
 
             # this might look redundant for now, but it is nice for the future extensions
             self.output_unit.output = output_sum
@@ -95,6 +97,15 @@ class Bnn:
             network_output = self.output_unit.output
 
         return network_output
+
+
+def relu(x):
+    return max(0, x)
+
+
+def sqexp(x):
+    return np.exp(-(x**2))
+
 
 problem1()
 
