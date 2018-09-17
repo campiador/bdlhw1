@@ -4,6 +4,8 @@
 # Note: this implementation assumes all the hidden layers(not input or output layer) have the same width, as was the
 # case with all the given examples in the problem. This assumption made my code much more readable and simple.
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 np.random.seed(42)
 
@@ -11,19 +13,44 @@ np.random.seed(42)
 """
 Regression of Bayesian Neural Network
 """
+
+DEPTH = 0
+WIDTH = 1
+G = 200
+
+
+
 def problem1():
     activation_funcs = [sqexp, np.tanh, relu]
+    network_dimensions_list = [(1, 2), (1, 10), (2, 2), (10, 10)]
 
 
-    bnn = Bnn([1, 2, 3], 2, 2)
-    bnn.set_activation_func(relu) #TODO try other activation functions np.tanh
+    network_dimensions = (2, 2)
 
-    y = bnn.propagate_forward_and_calculate_output()
+    activation_func = sqexp
 
-    print(y)
+
+
+    x_grid_G = np.linspace(-20, 20, G)
+
+
+    plot_prior_data(x_grid_G, activation_funcs, network_dimensions_list)
+
+
+def draw_prior_samples_bnn(activation_func, network_dimensions, x_grid_G):
+    f_x_vector = []
+    for x in x_grid_G:
+        bnn = Bnn([x], network_dimensions[DEPTH], network_dimensions[WIDTH])
+        bnn.set_activation_func(activation_func)
+        f_x = bnn.propagate_forward_and_calculate_output()
+        f_x_vector.append(f_x)
+    return f_x_vector
 
 
 class Unit:
+    """
+        This class represents a node in a neural network
+    """
     def __init__(self, output=0, weight_vector_length=1):
         self.weight_vector = np.random.normal(0, 1, weight_vector_length)
 
@@ -31,6 +58,7 @@ class Unit:
         self.bias = np.random.normal(0, 1)
 
         self.output = output
+
 
 class Bnn:
     def __init__(self, input_x_vector, num_hidden_layers, num_units_per_layer, activation_func=None):
@@ -109,6 +137,30 @@ def relu(x):
 def sqexp(x):
     return np.exp(-(x**2))
 
+
+def plot_prior_data(x_grid_G, function_list, dimension_list):
+    fig_h, subplot_grid = plt.subplots(
+        nrows=len(dimension_list), ncols=len(function_list), sharex=True, sharey=False, squeeze=True)
+
+
+    for index_l, input_function in enumerate(function_list):
+        for index_v, architecture in enumerate(dimension_list):
+            # FIXME: each panel should show 5 samples from the prior
+            samples = draw_prior_samples_bnn(input_function, architecture, x_grid_G)
+
+            samples = np.asarray(samples)
+            samples_t = samples.transpose()
+
+            subplot_grid[index_v, index_l].plot(x_grid_G, samples_t, linestyle='-.')
+            subplot_grid[index_v, index_l].set_xlabel('x')
+            subplot_grid[index_v, index_l].set_ylabel('f={}, arch={}'.format(function_names.get(input_function), architecture))
+    plt.show()
+
+function_names = {
+  sqexp: "sqexp",
+  np.tanh: "tanh",
+  relu: "relu"
+}
 
 problem1()
 
