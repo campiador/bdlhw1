@@ -12,6 +12,9 @@ np.random.seed(42)
 Regression of Bayesian Neural Network
 """
 def problem1():
+    activation_funcs = [sqexp, np.tanh, relu]
+
+
     bnn = Bnn([1, 2, 3], 2, 2)
     bnn.set_activation_func(relu) #TODO try other activation functions np.tanh
 
@@ -21,7 +24,7 @@ def problem1():
 
 
 class Unit:
-    def __init__(self, output=0, weight_vector_length=0, bias=0):
+    def __init__(self, output=0, weight_vector_length=1):
         self.weight_vector = np.random.normal(0, 1, weight_vector_length)
 
         # Scaler values
