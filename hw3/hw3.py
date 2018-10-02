@@ -19,7 +19,7 @@ def problem1():
     x_train_N = np.asarray([-5.0, -2.50, 0.00, 2.50, 5.0])
     y_train_N = np.asarray([-4.91, -2.48, 0.05, 2.61, 5.09])
 
-    n_samples_list = [1, 10]#, 100, 1000]
+    n_samples_list = [1, 10, 100, 1000]
 
     # 𝑚̃, mean of 𝑤
     m_tilda_list = np.linspace(-3.0, 5.0, 20)
@@ -34,12 +34,31 @@ def problem1():
     # 𝑠¯, log stddev of 𝑏
     s_bar = np.log(0.1)
 
-
+    loss_lists_for_all_of_the_sample_sizes = []
     for n_samples in n_samples_list:
-        loss_list = []
+
+        loss_list_for_one_of_the_sample_sizes = []
+
         for m_tilda in m_tilda_list:
-            loss = approximate_loss(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N)
-            loss_list.append(loss)
+
+            sum_loss_for_n_samples = 0
+            for n in range(0, n_samples):
+
+                loss = approximate_loss(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N)
+                sum_loss_for_n_samples += loss
+
+            sum_loss_for_n_samples_and_m_tilda = sum_loss_for_n_samples / n_samples
+
+            loss_list_for_one_of_the_sample_sizes.append(sum_loss_for_n_samples_and_m_tilda)
+
+        loss_lists_for_all_of_the_sample_sizes.append(loss_list_for_one_of_the_sample_sizes)
+
+
+    plot_prior_data(m_tilda_list, n_samples_list, loss_lists_for_all_of_the_sample_sizes)
+
+
+
+
 
 
 def approximate_loss(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N):
@@ -53,30 +72,21 @@ def approximate_loss(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N):
     L = log_p_w_b + log_p_y_given_x_w_b - log_q
     return -1 * L
 
-def draw_prior_samples_bnn(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N, n_samples, x_grid_G):
 
-        sum_losses = 0
-        for i in range(0, n_samples):
-            sum_losses += approximate_loss(m_bar, m_tilda, s_bar, s_tilda, x_train_N, y_train_N)
-        avg_loss = sum_losses / n_samples
-
-
-
-def plot_prior_data(x_grid_G, total_number_of_mc_samples_list):
+def plot_prior_data(x_grid_G, total_number_samples_list, actual_data):
     fig_h, subplot_grid = plt.subplots(
-        nrows=0, ncols=len(total_number_of_mc_samples_list), sharex=True, sharey=False, squeeze=True)
+        nrows=1, ncols=len(total_number_samples_list), sharex=True, sharey=True, squeeze=True, figsize=(10,10))
 
-
-    for index_col, number_of_samples in enumerate(total_number_of_mc_samples_list):
-        # FIXME: each panel should show 5 samples from the prior
-        samples = draw_prior_samples_bnn(number_of_samples, x_grid_G)
+    for index_col, number_of_samples in enumerate(total_number_samples_list):
+        samples = actual_data[index_col]
 
         samples = np.asarray(samples)
         samples_t = samples.transpose()
 
-        subplot_grid[0, index_col].plot(x_grid_G, samples_t, linestyle='-.')
-        subplot_grid[0, index_col].set_xlabel('m_tilda')
-        subplot_grid[0, index_col].set_ylabel('m={}'.format(number_of_samples))
+
+        subplot_grid[index_col].plot(x_grid_G, samples_t, linestyle='-.')
+        subplot_grid[index_col].set_xlabel('m_tilda')
+        subplot_grid[index_col].set_ylabel('#n samples={}'.format(number_of_samples))
     plt.show()
 
 
