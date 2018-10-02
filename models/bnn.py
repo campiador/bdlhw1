@@ -1,5 +1,7 @@
 import numpy as np
-from scipy.stats import norm
+
+from autograd.scipy.stats import norm
+from autograd import numpy as ag_np
 
 from models.unit import Unit
 
@@ -122,17 +124,17 @@ class Bnn:
         return loglik
 
 
-    def get_log_q_w_b_given_m_s(self, m_tilda, s_tilda, m_bar, s_bar):
-        log_q = 0
+    def get_log_q_w_b_given_m_s(self, m_tilda, m_bar, s_tilda, s_bar):
+        log_q = 0.0
 
         total_layers = self.hidden_layers + [[self.output_unit]]
 
         for layer in total_layers:
             for unit in layer:
                 for w in unit.weight_vector:
-                    log_q += norm.logpdf(w, m_tilda, np.exp(s_tilda)**2)
+                    log_q += norm.logpdf(w, m_tilda, ag_np.exp(s_tilda)**2)
 
-                log_q += norm.logpdf(unit.bias, m_bar, np.exp(s_bar)**2)
+                log_q += norm.logpdf(unit.bias, m_bar, ag_np.exp(s_bar)**2)
 
         return log_q
 
