@@ -13,7 +13,7 @@ class Bnn:
             print("num units per layer should be at least 1. If you want no hidden layers, set num hidden layers to 0")
             exit(1)
 
-        self.input_layer = [Unit(x) for x in input_x_vector] #weights are not important here
+        self.input_layer = [Unit(x) for x in input_x_vector]  # weights are not important here
 
         self.hidden_layers = []
 
