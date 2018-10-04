@@ -1,13 +1,12 @@
-import numpy as np
-
-from autograd.scipy.stats import norm
+from autograd.scipy.stats import norm as ag_norm
 from autograd import numpy as ag_np
 
 from models.unit import Unit
 
 
 class Bnn:
-    def __init__(self, input_x_vector, num_hidden_layers, num_units_per_layer, activation_func=None):
+    def __init__(self, input_x_vector, num_hidden_layers, num_units_per_layer, activation_func=None,
+                 unit_weight_mean = 0, unit_bias_mean=0, unit_weight_logsigma=1, unit_bias_logsigma=1):
 
         if num_units_per_layer < 1:
             print("num units per layer should be at least 1. If you want no hidden layers, set num hidden layers to 0")
@@ -27,9 +26,11 @@ class Bnn:
                 # length of the previous layer length. In this implementation, all hidden layers have same num of units!
                 # Therefore, the units have a weight vector of the length of num_units_per_layer
                 if layer_index == 0: # first hidden layer (not the input layer)
-                    new_unit = Unit(0, len(self.input_layer))
+                    new_unit = Unit(0, len(self.input_layer), unit_weight_mean, ag_np.exp(unit_weight_logsigma)**2,
+                                    unit_bias_mean, ag_np.exp(unit_bias_logsigma)**2)
                 else:
-                    new_unit = Unit(0, num_units_per_layer)
+                    new_unit = Unit(0, num_units_per_layer, unit_weight_mean, ag_np.exp(unit_weight_logsigma)**2,
+                                    unit_bias_mean, ag_np.exp(unit_bias_logsigma)**2)
 
                 new_layer.append(new_unit)
 
@@ -91,7 +92,7 @@ class Bnn:
         for layer in total_layers:
             for unit in layer:
                 for w in unit.weight_vector:
-                    log_p_w += norm.logpdf(w, 0, 1)
+                    log_p_w += ag_norm.logpdf(w, 0, 1)
 
         return log_p_w
 
@@ -102,27 +103,17 @@ class Bnn:
 
         for layer in total_layers:
             for unit in layer:
-                log_p_b += norm.logpdf(unit.bias, 0, 1)
+                log_p_b += ag_norm.logpdf(unit.bias, 0, 1)
         return log_p_b
-
-    # def likelihood(self, n_inputs, sigma=0.1):
-    #     lik = 1
-    #
-    #     for input in n_inputs:
-    #         f_x_w_b = self.propagate_forward_and_calculate_output(Unit(input))
-    #         lik *= np.random.normal(f_x_w_b, sigma)
-    #
-    #     return lik
 
     def log_likelihood(self, n_outputs, n_inputs, sigma=0.1):
         loglik = 0
 
         for index, input in enumerate(n_inputs):
             f_x_w_b = self.propagate_forward_and_calculate_output(Unit(input))
-            loglik += norm.logpdf(n_outputs[index], f_x_w_b, sigma**2)
+            loglik += ag_norm.logpdf(n_outputs[index], f_x_w_b, sigma**2)
 
         return loglik
-
 
     def get_log_q_w_b_given_m_s(self, m_tilda, m_bar, s_tilda, s_bar):
         log_q = 0.0
@@ -132,9 +123,11 @@ class Bnn:
         for layer in total_layers:
             for unit in layer:
                 for w in unit.weight_vector:
-                    log_q += norm.logpdf(w, m_tilda, ag_np.exp(s_tilda)**2)
+                    log_q += ag_norm.logpdf(w, m_tilda, ag_np.exp(s_tilda)**2)
 
-                log_q += norm.logpdf(unit.bias, m_bar, ag_np.exp(s_bar)**2)
+
+
+                log_q += ag_norm.logpdf(unit.bias, m_bar, ag_np.exp(s_bar)**2)
 
         return log_q
 
